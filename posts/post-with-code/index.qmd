@@ -66,7 +66,7 @@ sequenceDiagram
 ```
 
 ```{python}
-# | label: fig-polar
+# | label: fig-polar1
 # | fig-cap: "A line plot on a polar axis"
 
 import numpy as np
@@ -103,7 +103,7 @@ sequenceDiagram
 ```
 
 ```{python}
-# | label: fig-polar
+# | label: fig-polar2
 # | fig-cap: "A line plot on a polar axis"
 
 import numpy as np
@@ -140,7 +140,7 @@ sequenceDiagram
 ```
 
 ```{python}
-# | label: fig-polar
+# | label: fig-polar3
 # | fig-cap: "A line plot on a polar axis"
 
 import numpy as np
