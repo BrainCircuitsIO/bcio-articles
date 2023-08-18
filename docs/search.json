@@ -1,10 +1,45 @@
 [
   {
-    "objectID": "posts/post-with-code/index.html",
-    "href": "posts/post-with-code/index.html",
-    "title": "Post With Code",
+    "objectID": "posts/connectome-cloud-analytics/index.html",
+    "href": "posts/connectome-cloud-analytics/index.html",
+    "title": "Large-Scale Connectome Analytics in the Cloud",
     "section": "",
-    "text": "This is a post with executable code.\n\n\n\n\n\nsequenceDiagram\n  participant Alice\n  participant Bob\n  Alice-&gt;&gt;John: Hello John, how are you?\n  loop Healthcheck\n    John-&gt;&gt;John: Fight against hypochondria\n  end\n  Note right of John: Rational thoughts &lt;br/&gt;prevail!\n  John--&gt;&gt;Alice: Great!\n  John-&gt;&gt;Bob: How about you?\n  Bob--&gt;&gt;John: Jolly good!\n\n\n\n\n\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n    subplot_kw={'projection': 'polar'}\n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\nFigure 1: A line plot on a polar axis\n\n\n\n\nThis is a post with executable code.\n\n\n\n\n\nsequenceDiagram\n  participant Alice\n  participant Bob\n  Alice-&gt;&gt;John: Hello John, how are you?\n  loop Healthcheck\n    John-&gt;&gt;John: Fight against hypochondria\n  end\n  Note right of John: Rational thoughts &lt;br/&gt;prevail!\n  John--&gt;&gt;Alice: Great!\n  John-&gt;&gt;Bob: How about you?\n  Bob--&gt;&gt;John: Jolly good!\n\n\n\n\n\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n    subplot_kw={'projection': 'polar'}\n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\nFigure 2: A line plot on a polar axis\n\n\n\n\nThis is a post with executable code.\n\n\n\n\n\nsequenceDiagram\n  participant Alice\n  participant Bob\n  Alice-&gt;&gt;John: Hello John, how are you?\n  loop Healthcheck\n    John-&gt;&gt;John: Fight against hypochondria\n  end\n  Note right of John: Rational thoughts &lt;br/&gt;prevail!\n  John--&gt;&gt;Alice: Great!\n  John-&gt;&gt;Bob: How about you?\n  Bob--&gt;&gt;John: Jolly good!\n\n\n\n\n\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n    subplot_kw={'projection': 'polar'}\n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\nFigure 3: A line plot on a polar axis\n\n\n\n\nThis is a post with executable code.\n\n\n\n\n\nsequenceDiagram\n  participant Alice\n  participant Bob\n  Alice-&gt;&gt;John: Hello John, how are you?\n  loop Healthcheck\n    John-&gt;&gt;John: Fight against hypochondria\n  end\n  Note right of John: Rational thoughts &lt;br/&gt;prevail!\n  John--&gt;&gt;Alice: Great!\n  John-&gt;&gt;Bob: How about you?\n  Bob--&gt;&gt;John: Jolly good!\n\n\n\n\n\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n    subplot_kw={'projection': 'polar'}\n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\nFigure 4: A line plot on a polar axis"
+    "text": "We learn how to access and analyze large-scale connectome datasets hosted on BrainCircuits.io remotely using Python and DuckDB."
+  },
+  {
+    "objectID": "posts/connectome-cloud-analytics/index.html#goals",
+    "href": "posts/connectome-cloud-analytics/index.html#goals",
+    "title": "Large-Scale Connectome Analytics in the Cloud",
+    "section": "",
+    "text": "We learn how to access and analyze large-scale connectome datasets hosted on BrainCircuits.io remotely using Python and DuckDB."
+  },
+  {
+    "objectID": "posts/connectome-cloud-analytics/index.html#requirements",
+    "href": "posts/connectome-cloud-analytics/index.html#requirements",
+    "title": "Large-Scale Connectome Analytics in the Cloud",
+    "section": "Requirements",
+    "text": "Requirements\nWe need to first install DuckDB into our Python environment\npip install duckdb==0.8.1"
+  },
+  {
+    "objectID": "posts/connectome-cloud-analytics/index.html#datasets",
+    "href": "posts/connectome-cloud-analytics/index.html#datasets",
+    "title": "Large-Scale Connectome Analytics in the Cloud",
+    "section": "Datasets",
+    "text": "Datasets\nEvery dataset on BrainCircuits.io has a unique string identifier. You can find the identifier in the About widget in the application, or by visiting this URL to get an overview of public datasets want to access."
+  },
+  {
+    "objectID": "posts/connectome-cloud-analytics/index.html#the-data-model",
+    "href": "posts/connectome-cloud-analytics/index.html#the-data-model",
+    "title": "Large-Scale Connectome Analytics in the Cloud",
+    "section": "The Data Model",
+    "text": "The Data Model\n\n\n\n\nerDiagram\n    CUSTOMER ||--o{ ORDER : places\n    ORDER ||--|{ LINE-ITEM : contains\n    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses\n\n\n\n\n\n\nParquet Files for a Datasets\n\n\n\n\n\n\nFilename\nContent\n\n\n\n\napple\n2.05\n\n\npear\n1.37\n\n\norange\n3.09"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "",
+    "section": "",
+    "text": "Large-Scale Connectome Analytics in the Cloud\n\n\n\n\n\n\n\nAnalysis\n\n\n\n\n\n\n\n\n\n\n\nAug 18, 2023\n\n\nStephan Gerhard\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "about.html",
@@ -12,19 +47,5 @@
     "title": "About",
     "section": "",
     "text": "About this blog"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "",
-    "section": "",
-    "text": "Post With Code\n\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\n\n\nAug 18, 2023\n\n\nHarlow Malloc\n\n\n\n\n\n\n  \n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\n\n\nAug 15, 2023\n\n\nTristan O’Malley\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "posts/welcome/index.html",
-    "href": "posts/welcome/index.html",
-    "title": "Welcome To My Blog",
-    "section": "",
-    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
   }
 ]

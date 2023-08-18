@@ -2,9 +2,9 @@ project:
   type: website
   output-dir: docs
 
-website:
-  repo-url: https://github.com/BrainCircuitsIO/bcio-articles
-  repo-actions: [edit, issue]
+#website:
+#  repo-url: https://github.com/BrainCircuitsIO/bcio-articles
+#  repo-actions: [edit, issue]
 
 format:
   html:

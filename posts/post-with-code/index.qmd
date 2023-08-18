@@ -8,6 +8,7 @@ format:
   html:
     code-fold: false  
 jupyter: python3
+draft: true
 ---
 
 This is a post with executable code.
