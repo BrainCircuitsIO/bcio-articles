@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  repo-url: https://github.com/quarto-dev/quarto-demo
+  repo-url: https://github.com/BrainCircuitsIO/bcio-articles
   repo-actions: [edit, issue]
 
 format:
