@@ -77,7 +77,6 @@ df = con.query(f"""SELECT *
                LIMIT 5""").df()
 df
 ```
-<br />
 
 Let's retrieve the first 5 neurons that have more than 1000 downstream partners and sort by the number of downstream partners. We can use the following query and retrieve the results directly in a Pandas dataframe:
 
@@ -89,7 +88,6 @@ df = con.query(f"""SELECT *
                LIMIT 5""").df()
 df
 ```
-<br />
 
 We see that segment `720575940621280688` has 51620 downstream partners.
 
@@ -126,18 +124,17 @@ df = con.query(f"""SELECT *
 df
 ```
 
-We notice that this query is very slow. One option to speed things up is to download the file locally and run the query locally:
+We notice that this query is very slow. One option to speed things up is to download the entire `skeleton_nodes.parquet` file (180MB) and run the query locally:
 
 ```python
 !wget -O /tmp/skeleton_nodes.parquet \
     https://api.braincircuits.io/data/fruitfly_fafb_flywire_public/skeleton/l2skeletons/skeleton_nodes.parquet 
 ```
 
-And then the same query takes only a fraction of a second.
+The same query now takes only a fraction of a second.
 
 ```python
 df = con.query(f"""SELECT * 
                FROM '/tmp/skeleton_nodes.parquet' 
                WHERE segment_id = {segment_id}""").df()
 ```
-
