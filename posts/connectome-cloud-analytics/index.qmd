@@ -1,0 +1,143 @@
+---
+title: "Large-Scale Connectome Analytics in the Cloud"
+author: "Stephan Gerhard"
+date: "2023-10-09"
+image: "image.jpg"
+categories: [analysis]
+draft: false
+jupyter: python3
+execute: 
+  enabled: true
+---
+
+## Goals
+
+Learn how to access and analyze large-scale connectome datasets hosted on BrainCircuits.io remotely in Python using [DuckDB](https://duckdb.org/).
+
+
+## Requirements
+
+We need to first install DuckDB into our Python environment
+
+```python
+pip install duckdb
+```
+
+## Datasets
+
+Every dataset on BrainCircuits.io has a unique string identifier. You can find the identifier in the [Dataset Description](https://braincircuits.io/dataset_description/) overview or by inspecting the folders of the [source data](https://api.braincircuits.io/data/) directly.
+
+For the following tutorial we are going to use the public fruitfly FlyWire dataset with identifier `fruitfly_fafb_flywire_public`. Please make sure to cite the appropriate publications when using this data. You can find relevant links in the `About` widget of the dataset.
+
+## Data Model Overview
+
+The static connectome dataset consists of a number of Parquet files. You can see all the files for the FlyWire dataset here: [https://api.braincircuits.io/data/fruitfly_fafb_flywire_public/](https://api.braincircuits.io/data/fruitfly_fafb_flywire_public/)
+
+In each dataset folder, you find a `DATASET.txt` file which shows for all files the contained columns and data type of the column together with the total number of records available.
+
+The following table describes briefly the content of each type of file:
+
+| Filename  | Content  |
+|--------|--------|
+| `neurons.parquet`  | Each neuron (or segment) in the dataset with an arbitrary set of columns with more information about individual neurons   |
+| `segment_link.parquet`   | An aggregate edge table that lists the synaptic counts between source and target segments. Additional columns with some statistics about the connection (e.g. `avg_scores` is the average score value of each individual synaptic link score)    |
+| `segment_size.parquet`   | Size information about a segment such as number of containing supervoxels or total number of voxels |
+| `segment_nucleus.parquet`   | For each segment a count of associated number of nuclei. Should only be one in an ideal world with perfect segmentations. |
+| `segment_neurotransmitter.parquet`   | Summary of most likely neurotransmitter per segment based on filtering of presynaptic locations and their individual neurontransmitter prediction  |
+| `segment_link_pre.parquet`   | Number of presynaptic locations and downstream partner segments for each segment |
+| `segment_link_post.parquet`   | Number of postsynaptic locations and upstream partner segments for each segment |
+| `link.parquet/*.parquet` | Same information as in thet `synapse_link.parquet` file but split into individual parquet files for faster access |
+| `neurotransmitter.parquet/*.parquet` | The neurotransmitter predictions for each individual synaptic link |
+| `nucleus.parquet/*.parquet` | The location and size of each individual predicted nucleus |
+| `synapse_link.parquet`   | Each individual predicted synaptic link between a presynaptic and a postsynaptic location with associated scores. |
+| `skeleton/l2skeletons/skeletons.parquet` | Summary statistics about each exported `l2skeleton` in the dataset.  |
+| `skeleton/l2skeletons/skeleton_nodes.parquet` | Individual skeleton nodes for each segment.  |
+
+## Query the Data
+
+Using DuckDB, those files can be used remotely as tables in an SQL query. If you want to go into more depth, you can read the [DuckDB documentation](https://duckdb.org/docs). Here, we demonstrate a few common queries to get started. In order to improve readability of the query, we store part of the URL in a `baseurl` variable
+
+```{python}
+import duckdb
+baseurl = 'https://api.braincircuits.io/data/fruitfly_fafb_flywire_public'
+```
+
+First, we need a DuckDB connection object:
+
+```{python}
+con = duckdb.connect()
+```
+
+We can query neurons by a search string easily. If we want to retrieve all neurons which contain `BPN` string(case-insensitive) in their label column, we use the following query:
+
+```{python}
+df = con.query(f"""SELECT * 
+               FROM '{baseurl}/neurons.parquet' 
+               WHERE label ILIKE '%BPN%'
+               LIMIT 5""").df()
+df
+```
+<br />
+
+Let's retrieve the first 5 neurons that have more than 1000 downstream partners and sort by the number of downstream partners. We can use the following query and retrieve the results directly in a Pandas dataframe:
+
+```{python}
+df = con.query(f"""SELECT * 
+               FROM '{baseurl}/neurons.parquet' 
+               WHERE nr_downstream_partner > 1000 
+               ORDER BY nr_downstream_partner DESC
+               LIMIT 5""").df()
+df
+```
+<br />
+
+We see that segment `720575940621280688` has 51620 downstream partners.
+
+Let's store this segment id as variable
+
+```{python}
+segment_id = 720575940621280688
+```
+
+Let's get all the downstream partners of this segment:
+
+```{python}
+df = con.query(f"""SELECT * 
+               FROM '{baseurl}/segment_link.parquet' 
+               WHERE src = {segment_id}
+               ORDER BY dst DESC
+               LIMIT 5""").df()
+df
+```
+
+And we get the list of all downstream segments from the dataframe:
+
+```{python}
+downstream_segments = df['dst'].tolist()
+print(downstream_segments[:5])
+```
+
+Let's get the L2 skeleton of this segment
+
+```{python}
+df = con.query(f"""SELECT * 
+               FROM '{baseurl}/skeleton/l2skeletons/skeleton_nodes.parquet' 
+               WHERE segment_id = {segment_id}""").df()
+df
+```
+
+We notice that this query is very slow. One option to speed things up is to download the file locally and run the query locally:
+
+```python
+!wget -O /tmp/skeleton_nodes.parquet \
+    https://api.braincircuits.io/data/fruitfly_fafb_flywire_public/skeleton/l2skeletons/skeleton_nodes.parquet 
+```
+
+And then the same query takes only a fraction of a second.
+
+```python
+df = con.query(f"""SELECT * 
+               FROM '/tmp/skeleton_nodes.parquet' 
+               WHERE segment_id = {segment_id}""").df()
+```
+

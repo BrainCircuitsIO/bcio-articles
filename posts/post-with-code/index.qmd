@@ -70,8 +70,6 @@ sequenceDiagram
 # | label: fig-polar1
 # | fig-cap: "A line plot on a polar axis"
 
-import numpy as np
-import matplotlib.pyplot as plt
 
 r = np.arange(0, 2, 0.01)
 theta = 2 * np.pi * r
@@ -107,8 +105,6 @@ sequenceDiagram
 # | label: fig-polar2
 # | fig-cap: "A line plot on a polar axis"
 
-import numpy as np
-import matplotlib.pyplot as plt
 
 r = np.arange(0, 2, 0.01)
 theta = 2 * np.pi * r
@@ -144,8 +140,6 @@ sequenceDiagram
 # | label: fig-polar3
 # | fig-cap: "A line plot on a polar axis"
 
-import numpy as np
-import matplotlib.pyplot as plt
 
 r = np.arange(0, 2, 0.01)
 theta = 2 * np.pi * r
