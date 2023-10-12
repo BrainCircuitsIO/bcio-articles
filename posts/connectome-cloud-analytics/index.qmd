@@ -138,3 +138,24 @@ df = con.query(f"""SELECT *
                FROM '/tmp/skeleton_nodes.parquet' 
                WHERE segment_id = {segment_id}""").df()
 ```
+
+We can now also retrieve the presynaptic locations for this segment with the following query:
+
+```{python}
+df = con.query(f"""SELECT * 
+               FROM '{baseurl}/synapse_link.parquet' 
+               WHERE pre_segment_id = {segment_id}
+               LIMIT 5""").df()
+df
+```
+
+Or the postsynaptic locations:
+
+```{python}
+df = con.query(f"""SELECT * 
+               FROM '{baseurl}/synapse_link.parquet' 
+               WHERE post_segment_id = {segment_id}
+               LIMIT 5""").df()
+df
+```
+
