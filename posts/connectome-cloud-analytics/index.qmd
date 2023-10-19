@@ -8,6 +8,7 @@ draft: false
 jupyter: python3
 execute: 
   enabled: true
+  freeze: auto
 ---
 
 ## Goals
@@ -58,6 +59,7 @@ The following table describes briefly the content of each type of file:
 Using DuckDB, those files can be used remotely as tables in an SQL query. If you want to go into more depth, you can read the [DuckDB documentation](https://duckdb.org/docs). Here, we demonstrate a few common queries to get started. In order to improve readability of the query, we store part of the URL in a `baseurl` variable
 
 ```{python}
+import navis
 import duckdb
 baseurl = 'https://api.braincircuits.io/data/fruitfly_fafb_flywire_public'
 ```
@@ -89,7 +91,17 @@ df = con.query(f"""SELECT *
 df
 ```
 
-We see that segment `720575940621280688` has 51620 downstream partners.
+We can inspect all the columns in the data frame with:
+```{python}
+df.columns
+```
+
+Let's display only the number of downstream partners and presynaptic locations:
+```{python}
+df[['segment_id', 'nr_downstream_partner', 'nr_pre']]
+```
+
+We see that segment `720575940621280688` has 51620 downstream partners and 146255 presynaptic locations.
 
 Let's store this segment id as variable
 
@@ -103,8 +115,7 @@ Let's get all the downstream partners of this segment:
 df = con.query(f"""SELECT * 
                FROM '{baseurl}/segment_link.parquet' 
                WHERE src = {segment_id}
-               ORDER BY dst DESC
-               LIMIT 5""").df()
+               ORDER BY dst DESC""").df()
 df
 ```
 
@@ -139,7 +150,26 @@ df = con.query(f"""SELECT *
                WHERE segment_id = {segment_id}""").df()
 ```
 
-We can now also retrieve the presynaptic locations for this segment with the following query:
+If we are interested in advanced neuroanatomical analyses of this neuron based on it's skeletonized representation, we can use the [NAVis package](https://navis.readthedocs.io/) for neuron analysis and visualization.
+
+In order to do that, we convert the DataFrame into a format that can be parsed by the SWC reader of NAVis.
+
+```{python}
+df2 = df.rename(columns={'parent': 'parent_id'})
+df2['label'] = 0
+df2['radius'] = 0
+```
+
+Then we convert the DataFrame to a `navis.TreeNeuron` to get some basic statistics.
+
+```{python}
+swc = navis.read_swc(df2)
+print(swc)
+```
+
+See the Tutorials sections on the NAVis website for an overview for further processing of the skeleton.
+
+Going back to synaptic data, we can now also retrieve presynaptic locations for this segment with the following query:
 
 ```{python}
 df = con.query(f"""SELECT * 
@@ -159,3 +189,11 @@ df = con.query(f"""SELECT *
 df
 ```
 
+It is also possible to fetch synaptic locations across a set of segments. Here, we're fetching more than 800'000 locations with a single query:
+
+```{python}
+df = con.query(f"""SELECT count(*) 
+               FROM '{baseurl}/synapse_link.parquet' 
+               WHERE pre_segment_id in ('720575940621280688','720575940615970783','720575940629174889','720575940621675174')""").df()
+df
+```

@@ -1,0 +1,127 @@
+---
+title: "Compare regions between datasets on the synaptic level"
+author: "Stephan Gerhard"
+date: "2023-10-12"
+image: "image.png"
+categories: [analysis]
+draft: false
+jupyter: python3
+execute: 
+  enabled: true
+  freeze: auto
+---
+
+## Goals
+
+How to compute region-based summaries of synaptic data for identified neurons in two datasets and compare between the two
+
+## Datasets
+
+We will be using two fruitfly ventral nerve cord datasets for the following analysis, namely FANC (`fruitfly_fanc_public`) and MANC (`fruitfly_manc`).
+
+## Data Model
+
+In both the MANC and FANC dataset, we are provided with a `synapse_region.parquet` file that links each predicted synaptic location to a region. The region labels is available in the `region` columns
+
+## Code
+
+First, we load DuckDB, create a connection and set the two baseurls
+
+```{python}
+import json
+import duckdb
+con = duckdb.connect()
+
+baseurl_fanc = 'https://api.braincircuits.io/data/fruitfly_fanc_public'
+baseurl_manc = 'https://api.braincircuits.io/data/fruitfly_manc'
+```
+
+We pick two homologous descending neurons on the left and right side that are matched between the datasets. We produce a string variable where we concatenated the segment IDs for the subsequent queries.
+
+```{python}
+segments_fanc = [648518346492614075, 648518346478550356]
+segments_manc = [10118, 10126]
+
+segids_fanc = ','.join(map(str, segments_fanc))
+segids_manc = ','.join(map(str, segments_manc))
+```
+
+Let's get the basic information for those neurons.
+
+```{python}
+
+df = con.query(f"""SELECT * 
+               FROM '{baseurl_fanc}/neurons.parquet' 
+               WHERE segment_id in ({segids_fanc})""").df()
+
+print(json.dumps(df.to_dict(orient='records'), indent=2))
+```
+
+```{python}
+
+df = con.query(f"""SELECT * 
+               FROM '{baseurl_manc}/neurons.parquet' 
+               WHERE segment_id in ({segids_manc})""").df()
+
+print(json.dumps(df.to_dict(orient='records'), indent=2))
+```
+
+Before we go into retrieving more details about the neurons, let's get an overview of the available regions and their synaptic link count in both datasets.
+
+For FANC
+
+```{python}
+con.execute(f"""select region, count() as count 
+    from '{baseurl_fanc}/synapse_link.parquet' 
+    group by region order by region;""").df()
+```
+
+And in MANC
+
+```{python}
+con.execute(f"""select region, count() as count 
+    from '{baseurl_manc}/synapse_link.parquet' 
+    group by region order by region;""").df()
+```
+
+We see that the nomenclature for the brain regions differet in both datasets.
+
+
+We can now query the `synapse_link.parquet` table which constains a `region` column for each dataset to retrieve their information. We're interested here in the regions where the presynaptic sites are located, i.e. the output region of the neuron.
+
+```{python}
+df = con.query(f"""SELECT pre_segment_id, post_segment_id, region 
+               FROM '{baseurl_fanc}/synapse_link.parquet' 
+               WHERE pre_segment_id in ({segids_fanc})""").df()
+df
+```
+
+And for MANC
+
+```{python}
+df = con.query(f"""SELECT pre_segment_id, post_segment_id, region
+               FROM '{baseurl_manc}/synapse_link.parquet' 
+               WHERE pre_segment_id in ({segids_manc})""").df()
+df
+```    
+
+Next, we like to get the total count of presynaptic location for each segment and region. We can easily do that byy using the `group by` in the SQL statement:
+
+```{python}
+con.query(f"""SELECT pre_segment_id, region, count(*) as count
+               FROM '{baseurl_fanc}/synapse_link.parquet' 
+               WHERE pre_segment_id in ({segids_fanc}) \
+               GROUP BY region, pre_segment_id 
+               ORDER BY pre_segment_id asc, count desc""").df()
+```
+
+And for MANC
+
+```{python}
+con.query(f"""SELECT pre_segment_id, region, count(*) as count
+               FROM '{baseurl_manc}/synapse_link.parquet' 
+               WHERE pre_segment_id in ({segids_manc}) 
+               GROUP BY region, pre_segment_id 
+               ORDER BY pre_segment_id asc, count desc""").df()
+```
+

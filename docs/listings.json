@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/compare-regions/index.html",
       "/posts/connectome-cloud-analytics/index.html"
     ]
   }
