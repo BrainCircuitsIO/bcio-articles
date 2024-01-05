@@ -1,0 +1,104 @@
+---
+title: "Create ColorMIPs for Segmented EM Neurons"
+author: "Stephan Gerhard"
+date: "2023-12-18"
+image: "image.jpg"
+categories: [visualization]
+draft: true
+jupyter: python3
+execute: 
+  enabled: true
+  freeze: auto
+---
+
+## Goals
+
+We demonstrate how to generate so-called ColorMIP images from 3D meshes of segmented neurons in EM datasets. ColorMIPs are a way to represent a complex 3d structure as 2d images by encoding depth and signal strength information. They were introduced as part of the [NeuronBridge](https://neuronbridge.janelia.org/about) project at Janelia for finding genetic lines with relevant expression patterns.
+
+## Datasets
+
+We are going to map EM neurons for fruit fly's brain and VNC from the FlyWire and FANC datasets.
+
+## General Approach
+
+We are going to map EM neuron meshes, transform them into common unisex template spaces. We then use the vertex coordinates to label voxels in the 3d template space belonging to the neuron, and then apply a transformation using a common color-lookup table to project z coordinates of the neuron's morphology to a colored 2d image, i.e. the Color Depth Maximum Intensity Projection, or ColorMIP.
+
+## Steps
+
+First, we start with the brain. We need to load an example segment using [CloudVolume](https://github.com/seung-lab/cloud-volume) from a recent published FlyWire release.
+
+```python
+segment_id = 720575940601206499
+
+from cloudvolume import CloudVolume
+
+vol = CloudVolume('precomputed://gs://flywire_v141_m630', progress=False, use_https=True)
+m = vol.mesh.get(segment_id)[segment_id]
+```
+
+In the next step, we convert the mesh vertices to a target template space using the [NAVis FlyBrains package](https://github.com/navis-org/navis-flybrains/).
+
+```python
+import flybrains
+voxel_size = (0.5189161, 0.5189161, 1.0)
+
+vertices = navis.xform_brain(m.vertices, source='FLYWIRE', target='FAFB14', via='FAFB14raw')
+vertices2 = navis.xform_brain(vertices, source='FAFB14', target='JRC2018U')
+vertices3 = vertices2 / voxel_size
+```
+
+Then, we use the `neuron2mip` function to transform the mesh into an image, and store the image.
+
+```python
+result_image = neuron2mip(vertices3, 'brain')
+io.imsave(f'{segment_id}.png', result_image)
+```
+
+Here is how the original neuron looks like in 3D, and as a ColorMIP image.
+
+IMAGE
+
+Let's dive deeper into the `neuron2mip` function.
+
+```python
+from .helper import lutmap
+
+def neuron2mip(mesh_vertices, target_space):
+
+    
+    if target_space == 'brain':
+        # JRC2018_BRAIN_UNISEX
+        # different version rescaled for the neuronbridge data
+        # https://open.quiltdata.com/b/janelia-flylight-color-depth/tree/Color_Depth_MIPs_For_Download/JRC2018_UNISEX_20x_HR.nrrd
+        dim = (1210,  566,  174)
+        voxel_size = (0.5189161, 0.5189161, 1.0)
+
+    elif target_space == 'vnc':
+        # JRC2018_VNC_UNISEX_461
+        # added 90 pixel on top for colorbar placeholder
+        dim = (573, 1119, 219)
+        voxel_size = (0.461122, 0.461122, 0.7)
+    elif:
+        raise Exception('Unknown target space')
+
+    maxzval = dim[2]-1   
+    rendered_image = np.zeros(dim, dtype=np.uint8)
+    m = mesh_vertices.astype(np.uint32)
+    rendered_image[m[:, 0], m[:, 1], m[:, 2]] = 255
+    b = np.argmax(rendered_image, axis=2).astype(np.float64)
+    r = ((b/maxzval) * 255).astype(np.uint32)
+    b = b.astype(np.int32)
+    outputcol = np.zeros((rendered_image.shape[0], rendered_image.shape[1], 3), dtype=np.uint8)
+    for i in range(r.shape[0]):
+        for j in range(r.shape[1]):
+            if r[i,j] != 0:
+                hsv = rgb2hsv(np.array(lutmap[r[i,j]], dtype=np.double))
+                hsv[2] = 255
+                outputcol[i,j,:] = hsv2rgb(hsv).astype(np.uint8)
+    
+    return outputcol.transpose(1,0,2).astype(np.uint8)
+
+```
+
+Now, let's generate a ColorMIP for a VNC neuron based on the FANC dataset.
+

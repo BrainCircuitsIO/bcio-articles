@@ -84,7 +84,7 @@ con.execute(f"""select region, count() as count
     group by region order by region;""").df()
 ```
 
-We see that the nomenclature for the brain regions differet in both datasets.
+We see that the nomenclature for the brain regions are different in both datasets. In [this table](https://docs.google.com/spreadsheets/d/1_MBAJjVpShy3yBEkjvxmrkhXAzyrechsqMu32vwMRCk/edit?usp=sharing) you can find the region, tract, nerve and connective correspondences contributed by Kathi Eichler.
 
 
 We can now query the `synapse_link.parquet` table which constains a `region` column for each dataset to retrieve their information. We're interested here in the regions where the presynaptic sites are located, i.e. the output region of the neuron.
